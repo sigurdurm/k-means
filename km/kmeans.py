@@ -1,7 +1,4 @@
-
 import random
-import math
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import pylab
@@ -12,6 +9,7 @@ class KMeans():
     
     def __init__(self, showsubplots):
         self.showsubplots = showsubplots
+        
     
     def plotMeans(self, means):
         # mark centroids as (X)
@@ -41,13 +39,16 @@ class KMeans():
         self.plotMeans(means)
         pylab.show()
         
+        
+    def sse(self, item, mean):
+        diff = item - mean
+        diff = diff**2
+        return np.sum(diff)
+        
+        
     def distance(self, item, mean):
-#        return euclidean(item, mean)
-        dist = 0
-        for i in xrange(len(item)):
-            dist += (item[i] - mean[i]) ** 2
-            
-        return math.sqrt(dist)
+        return euclidean(item, mean)        
+        
     
     def calculateMeans(self, data, labels, numberOfClusters):
         means = np.zeros((numberOfClusters, len(data[0])))
@@ -66,13 +67,14 @@ class KMeans():
         
         return means, pointsInClusters
         
+        
     def calculateSSE(self, data, labels, numberOfClusters, means):
         totalsse = 0
         
         for i in xrange(len(data)):
             cluster = labels[i]
             point = data[i]
-            totalsse += self.distance(point, means[cluster])**2
+            totalsse += self.sse(point, means[cluster])
 
         return totalsse
     
@@ -92,7 +94,6 @@ class KMeans():
         else:
             self.subplotClusters(data, labels, means, iteration, title)
         
-        meansDiff = sys.float_info.max
         while iteration < maxiterations:
             #initialize labels for each iteration
             iteration += 1
