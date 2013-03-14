@@ -9,9 +9,9 @@ def zscore(xy):
 
 # generate 3 sets of normally distributed points around
 # different means with different variances
-pt1 = np.random.normal(1, 0.1, (100,2))
+pt1 = np.random.normal(1, 0.1, (200,2))
 pt2 = np.random.normal(5, 1.5, (500,2))
-pt3 = np.random.normal(10, 1, (100,2))
+pt3 = np.random.normal(10, 1, (200,2))
  
 data = np.concatenate((pt1, pt2, pt3))
 
