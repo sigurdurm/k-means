@@ -13,18 +13,7 @@ def distance(x, c):
         total += (x[idx] - c[idx])**2
     
     return math.sqrt(total) 
-    
-    
-def calculateSSE(data, labels, numberOfClusters, means):
-    totalsse = 0
-    
-    for i in xrange(len(data)):
-        cluster = labels[i]
-        point = data[i]
-        totalsse += distance(point, means[cluster])**2
-    
-    return totalsse
-    
+        
 def zscore(xy):
     return (xy-xy.mean())/xy.std()
     
@@ -103,15 +92,7 @@ if __name__ == '__main__':
             oldCentroids[:] = newCentroids
             np.savetxt(centroidspath, newCentroids)
             
-        
-        #TODO
-        #Custom output variable, or a extra value that holds sum og squared error for each centroid
-        
-        #calculate the within cluster variation, sum of squared error between all objects in cluster and its centroid
-#        SSE = calculateSSE(data, labels, numberOfClusters, oldCentroids)
-#        print "SSE: %f" % SSE
-        #break
-    
+            
     
     #Plot initialdata
     points = np.loadtxt(inputpath)
