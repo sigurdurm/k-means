@@ -20,7 +20,7 @@ data = pca.transform(items)
 #print items
 
 # run kmeans
-km = KMeans(showsubplots=True)
+km = KMeans(showsubplots=False)
 k,d,i = 3, 0.1, 10
 means, labels = km.run(data, numberOfClusters=k, threshold=d, maxiterations=i)
 print "final means: %s" % means
