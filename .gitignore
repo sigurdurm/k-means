@@ -1,0 +1,2 @@
+*.pyc
+build/	# ignore all files in the build/ directory
