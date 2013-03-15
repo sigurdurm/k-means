@@ -17,7 +17,7 @@ class MRKMeansCombinerJob(MRJob):
 #        print 'inside constructor'
         
 #        self.filename = self.options.centroidsFilename
-        #DEBUG purposes  (runner=inline)
+        #DEBUG purposes  local file (runner=inline)
         self.filename = self.options.debugcentroidsPath
         
         #Read in initial means
@@ -43,6 +43,10 @@ class MRKMeansCombinerJob(MRJob):
         self.add_passthrough_option(
             '--dpath', dest='debugcentroidsPath', type='str',
             help='dpath: debug mode centroids file name')
+            
+        self.add_passthrough_option(
+            '--doutput', dest='debugtoutput', type='str',
+            help='doutput: debug mode outputpath')
         
     
     def mapper(self, _, line):
@@ -59,6 +63,10 @@ class MRKMeansCombinerJob(MRJob):
          #Calculating the distance to nearest cluster
         distmatrix = distance.cdist(self.points, self.centroids, metric='euclidean')
         labels[:] = distmatrix.argmin(axis=1)
+        
+        np.savetxt(self.options.debugtoutput + 'labels.txt', labels)
+        
+#        pdb.set_trace()
 
         #emitting closest centroid and data point        
         for i in xrange(len(labels)):
@@ -79,7 +87,7 @@ class MRKMeansCombinerJob(MRJob):
             
         #TODO return also number of points
 #        print "combiner key, newcentroid (%d, %s)" % (key, newcentroid)
-        yield key, newcentroid
+        yield int(key), newcentroid
 
     #calculating the new means for each cluster key
     def reducer(self, key, values):

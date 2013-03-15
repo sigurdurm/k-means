@@ -16,15 +16,16 @@ if __name__ == '__main__':
     inputfile1 = os.path.join(path, 'data/data.txt')
     centroidsfilenamejob = 'centroids.txt'
     centroidsinputfile = os.path.join(path, 'data/centroids.txt')
+    outputpath = os.path.join(path, 'data/')
     
     dimensions = 2
     Utils.generateTestDataAndCentroids(k, dimensions, inputfile1, centroidsinputfile)
     
     #Create the Job
-    runner = 'local'    
+#    runner = 'local'    
 #    mr_job = MRKMeansJob(args=[inputfile1, '-r', runner, '--file', centroidsinputfile, '--cfile', centroidsfilenamejob, '--k', str(k)])
-#    runner = 'inline'
-    mr_job = MRKMeansCombinerJob(args=[inputfile1, '-r', runner, '--file', centroidsinputfile, '--cfile', centroidsfilenamejob, '--k', str(k), '--dpath', centroidsinputfile])
+    runner = 'inline'
+    mr_job = MRKMeansCombinerJob(args=[inputfile1, '-r', runner, '--file', centroidsinputfile, '--cfile', centroidsfilenamejob, '--k', str(k), '--doutput', outputpath, '--dpath', centroidsinputfile])
     #TODO, possible switch out parsing the output from std.out to parsing output files from reducers.    
     #output dir param
     #--output-dir
@@ -48,7 +49,7 @@ if __name__ == '__main__':
                     newCentroids[eval(values[0])] = eval(values[1])
                 mr_job.stdout.flush()
         
-        
+    
         print "new centroids: \n%s" % newCentroids
         #if centroids did not change then exit
         #check if the means have changed  
@@ -67,5 +68,9 @@ if __name__ == '__main__':
     
     #Plot initialdata
     points = np.loadtxt(inputfile1)
-    Plot.plotdataMrjob(points, newCentroids)
+    labels = np.loadtxt(outputpath + 'labels.txt')
+    Plot.plotPoints(points, labels, title='final')
+    Plot.plotMeans(newCentroids)
+    pylab.show()
+#    Plot.plotdataMrjob(points, newCentroids)
     

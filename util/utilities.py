@@ -56,7 +56,7 @@ class Plot():
     def plotPoints(data, labels, title):
         plt.title(title)
         availcolors = [[0.4,1,0.4],[1,0.4,0.4],[0.5,0.5,1],[0.8,0.1,1],[0.8,1,0.1]]
-        colors = [availcolors[i] for i in labels]
+        colors = [availcolors[int(i)] for i in labels]
         dataarray = np.array(data)
         pylab.scatter(dataarray[:,0],dataarray[:,1], c=colors)
         
