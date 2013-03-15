@@ -1,72 +1,39 @@
 from mr.kmeansmrjob import MRKMeansJob
 import numpy as np
-import random
-import math
-import matplotlib.pyplot as plt
-import pylab
 import os.path
+from scipy.spatial import distance
+from util.utilities import Utils
 
-#Euclidian distance
-def distance(x, c):
-    total = 0
-    for idx in xrange(len(x)):
-        total += (x[idx] - c[idx])**2
     
-    return math.sqrt(total) 
-        
-def zscore(xy):
-    return (xy-xy.mean())/xy.std()
-    
-def plotdata(points, centroids):
-    color = [0.4,0.8,0.2]
-    pylab.title('data and final means')
-    pylab.scatter(points[:,0],points[:,1], c=color)
-    
-    plt.scatter(newCentroids[:,0],newCentroids[:,1], marker='o', s = 500, linewidths=2, c='none')
-    plt.scatter(newCentroids[:,0],newCentroids[:,1], marker='x', s = 500, linewidths=2)
-    pylab.show()
-
-
 if __name__ == '__main__':
-    
-    dimensions = 2
-#    #generating random data    
-#    pt1 = np.random.normal(1, 0.1, (100,dimensions))
-#    pt2 = np.random.normal(5, 1, (500,dimensions))
-#    pt3 = np.random.normal(10, 1, (100,dimensions))
-#     
-#    points = np.concatenate((pt1, pt2, pt3))
-#    
-#    #normalize z-score
-#    points = zscore(points)    
-#    
-#    #write to file
-#    np.savetxt('data.txt', points)
-    
     
     k = 3
     maxiterations = 10
-    delta = 0.1
-        
-    #initializing the new centroids array 
-    newCentroids = np.zeros((k, dimensions))
+    delta = 0.1    
+    
+    #MapReduceJob params
+    path = os.path.dirname(__file__)
+    inputfile1 = os.path.join(path, 'data/data.txt')
+    centroidsfilenamejob = 'centroids.txt'
+    centroidsinputfile = os.path.join(path, 'data/centroids.txt')
+    
+    dimensions = 2
+    Utils.generateTestDataAndCentroids(k, dimensions, inputfile1, centroidsinputfile)
     
     #Create the Job
 #    runner = 'inline'
-    path = os.path.dirname(__file__)
     runner = 'local'
-    inputpath = os.path.join(path, 'data/data.txt')
-    centroidsfilename = 'centroids.txt'
-    centroidspath = os.path.join(path, 'data/centroids.txt')
-    mr_job = MRKMeansJob(args=[inputpath, '-r', runner, '--file', centroidspath, '--cfile', centroidsfilename, '--k', str(k)])
+    mr_job = MRKMeansJob(args=[inputfile1, '-r', runner, '--file', centroidsinputfile, '--cfile', centroidsfilenamejob, '--k', str(k)])
+    #TODO, possible switch out parsing the output from std.out to parsing output files from reducers.    
+    #output dir param
+    #--output-dir
     
-    #initialize centroids and write them to a file.
-    data = np.loadtxt(inputpath)
-    oldCentroids = np.array(random.sample(data, k))
-    print 'initialized centroids: \n %s' % oldCentroids
-    np.savetxt(centroidspath, oldCentroids)
+    #Iterative process    
+    #initializing
+    newCentroids = np.zeros((k, dimensions))
+    oldCentroids = np.loadtxt(centroidsinputfile)
+    
 
-    #iterate process    
     for i in xrange(maxiterations):
         print 'iteration %d' % i
         with mr_job.make_runner() as runner:
@@ -83,18 +50,18 @@ if __name__ == '__main__':
         #check if the means have changed  
         diff = 0
         for i in xrange(k):
-            diff += distance(newCentroids[i], oldCentroids[i])
+            diff += distance.euclidean(newCentroids[i], oldCentroids[i])
             
         print 'means diff %f:' % diff
         if diff < delta:
             break
         else:
             oldCentroids[:] = newCentroids
-            np.savetxt(centroidspath, newCentroids)
+            np.savetxt(centroidsinputfile, newCentroids)
             
             
     
     #Plot initialdata
-    points = np.loadtxt(inputpath)
-    plotdata(points, newCentroids)
+    points = np.loadtxt(inputfile1)
+    Utils.plotdataMrjob(points, newCentroids)
     
