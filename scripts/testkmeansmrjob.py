@@ -1,14 +1,14 @@
-from mr.kmeansmrjob import MRKMeansJob
+from mr import *
 import numpy as np
 import os.path
 from scipy.spatial import distance
-from util.utilities import Utils
+from util.utilities import *
 
     
 if __name__ == '__main__':
     
     k = 3
-    maxiterations = 10
+    maxiterations = 5
     delta = 0.1    
     
     #MapReduceJob params
@@ -21,9 +21,10 @@ if __name__ == '__main__':
     Utils.generateTestDataAndCentroids(k, dimensions, inputfile1, centroidsinputfile)
     
     #Create the Job
+    runner = 'local'    
+#    mr_job = MRKMeansJob(args=[inputfile1, '-r', runner, '--file', centroidsinputfile, '--cfile', centroidsfilenamejob, '--k', str(k)])
 #    runner = 'inline'
-    runner = 'local'
-    mr_job = MRKMeansJob(args=[inputfile1, '-r', runner, '--file', centroidsinputfile, '--cfile', centroidsfilenamejob, '--k', str(k)])
+    mr_job = MRKMeansCombinerJob(args=[inputfile1, '-r', runner, '--file', centroidsinputfile, '--cfile', centroidsfilenamejob, '--k', str(k), '--dpath', centroidsinputfile])
     #TODO, possible switch out parsing the output from std.out to parsing output files from reducers.    
     #output dir param
     #--output-dir
@@ -32,6 +33,7 @@ if __name__ == '__main__':
     #initializing
     newCentroids = np.zeros((k, dimensions))
     oldCentroids = np.loadtxt(centroidsinputfile)
+    print "initial centroids: \n%s" % oldCentroids
     
 
     for i in xrange(maxiterations):
@@ -46,6 +48,8 @@ if __name__ == '__main__':
                     newCentroids[eval(values[0])] = eval(values[1])
                 mr_job.stdout.flush()
         
+        
+        print "new centroids: \n%s" % newCentroids
         #if centroids did not change then exit
         #check if the means have changed  
         diff = 0
@@ -63,5 +67,5 @@ if __name__ == '__main__':
     
     #Plot initialdata
     points = np.loadtxt(inputfile1)
-    Utils.plotdataMrjob(points, newCentroids)
+    Plot.plotdataMrjob(points, newCentroids)
     

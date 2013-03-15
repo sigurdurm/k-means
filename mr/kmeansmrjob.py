@@ -1,21 +1,14 @@
 from mrjob.job import MRJob
 import numpy as np
-import math
 import os
-import mrjob
+from scipy.spatial import distance
 
 #Euclidian distance
-def distance(x, c):
-    total = 0
-    for idx in xrange(len(x)):
-        total += (x[idx] - c[idx])**2
-    
-    return math.sqrt(total) 
+def dist(x, c):
+    return distance.euclidean(x, c)
         
     
 class MRKMeansJob(MRJob):
-    
-    OUTPUT_PROTOCOL = mrjob.protocol.JSONProtocol    
     
     def __init__(self, *args, **kwargs):
         super(MRKMeansJob, self).__init__(*args, **kwargs)
@@ -51,9 +44,9 @@ class MRKMeansJob(MRJob):
         mindist = 0
         minCentroid = None
         for idx in xrange(self.options.numberofclusters):
-            dist = distance(point, self.centroids[idx])
-            if(dist < mindist or minCentroid == None):
-                mindist = dist
+            d = dist(point, self.centroids[idx])
+            if(d < mindist or minCentroid == None):
+                mindist = d
                 minCentroid = idx
                 
         #(id, data pairs to the reducer)

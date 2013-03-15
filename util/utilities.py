@@ -14,7 +14,7 @@ class Utils():
     def generateTestDataAndCentroids(k, dimensions, datafile=None, centroidsfile=None):
         #generating random data    
         pt1 = np.random.normal(1, 0.5, (100,dimensions))
-        pt2 = np.random.normal(5, 1, (500,dimensions))
+        pt2 = np.random.normal(5, 1, (50,dimensions))
         pt3 = np.random.normal(10, 1, (100,dimensions))
          
         points = np.concatenate((pt1, pt2, pt3))
