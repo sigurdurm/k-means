@@ -8,7 +8,7 @@ from util.utilities import *
 if __name__ == '__main__':
     
     k = 3
-    maxiterations = 5
+    maxiterations = 7
     delta = 0.1    
     
     #MapReduceJob params
@@ -16,16 +16,18 @@ if __name__ == '__main__':
     inputfile1 = os.path.join(path, 'data/data.txt')
     centroidsfilenamejob = 'centroids.txt'
     centroidsinputfile = os.path.join(path, 'data/centroids.txt')
-    outputpath = os.path.join(path, 'data/')
+    debugoutputpath = os.path.join(path, 'data/')
+    mroutputdir = os.path.join(path, 'data/mroutput')
     
     dimensions = 2
     Utils.generateTestDataAndCentroids(k, dimensions, inputfile1, centroidsinputfile)
     
     #Create the Job
-#    runner = 'local'    
+    runner = 'local'    
 #    mr_job = MRKMeansJob(args=[inputfile1, '-r', runner, '--file', centroidsinputfile, '--cfile', centroidsfilenamejob, '--k', str(k)])
-    runner = 'inline'
-    mr_job = MRKMeansCombinerJob(args=[inputfile1, '-r', runner, '--file', centroidsinputfile, '--cfile', centroidsfilenamejob, '--k', str(k), '--doutput', outputpath, '--dpath', centroidsinputfile])
+#    runner = 'inline'
+    mr_job = MRKMeansCombinerJob(args=[inputfile1, '-r', runner, '--file', centroidsinputfile, '--cfile', centroidsfilenamejob, '--k', str(k), '--doutput', debugoutputpath, '--dpath', centroidsinputfile, '--output-dir', mroutputdir])
+    
     #TODO, possible switch out parsing the output from std.out to parsing output files from reducers.    
     #output dir param
     #--output-dir
@@ -44,7 +46,8 @@ if __name__ == '__main__':
     
             if not mr_job.options.no_output:
                 for line in runner.stream_output():
-                    mr_job.stdout.write(line)
+#                    mr_job.stdout.write(line)
+#                    import pdb; pdb.set_trace()
                     values = line.strip().split('\t')
                     newCentroids[eval(values[0])] = eval(values[1])
                 mr_job.stdout.flush()
@@ -57,7 +60,7 @@ if __name__ == '__main__':
         for i in xrange(k):
             diff += distance.euclidean(newCentroids[i], oldCentroids[i])
             
-        print 'means diff %f:' % diff
+        print 'means total diff %f:' % diff
         if diff < delta:
             break
         else:
@@ -68,9 +71,13 @@ if __name__ == '__main__':
     
     #Plot initialdata
     points = np.loadtxt(inputfile1)
-    labels = np.loadtxt(outputpath + 'labels.txt')
-    Plot.plotPoints(points, labels, title='final')
-    Plot.plotMeans(newCentroids)
-    pylab.show()
-#    Plot.plotdataMrjob(points, newCentroids)
+    #Inline
+#    labels = np.loadtxt(debugoutputpath + 'mrlabels.txt')
+#    Plot.plotPoints(points, labels, title='final')
+#    Plot.plotMeans(newCentroids)
+#    pylab.show()
+    
+    #Local
+    points = np.loadtxt(inputfile1)
+    Plot.plotdataMrjob(points, newCentroids)
     

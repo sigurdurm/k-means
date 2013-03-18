@@ -1,2 +1,6 @@
 *.pyc
-build/	# ignore all files in the build/ directory
+build/	# ignore all files in the build/ dir
+scripts/data/mroutput/ #ignore mrjob output dir
+scripts/data/mr*.txt #ignore mrjob debug output dir
+scripts/data/centroids.txt
+scripts/data/data.txt

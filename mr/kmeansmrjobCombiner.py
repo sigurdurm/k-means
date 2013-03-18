@@ -2,7 +2,7 @@ from mrjob.job import MRJob
 import numpy as np
 import os
 from scipy.spatial import distance
-#import pdb
+import pdb
 
 #Euclidian distance
 def dist(x, c):
@@ -14,10 +14,8 @@ class MRKMeansCombinerJob(MRJob):
     def __init__(self, *args, **kwargs):
         super(MRKMeansCombinerJob, self).__init__(*args, **kwargs)
         
-#        print 'inside constructor'
-        
 #        self.filename = self.options.centroidsFilename
-        #DEBUG purposes  local file (runner=inline)
+        #DEBUG purposes  local file (runner=inline, because it cannot find the uploaded file)
         self.filename = self.options.debugcentroidsPath
         
         #Read in initial means
@@ -45,64 +43,63 @@ class MRKMeansCombinerJob(MRJob):
             help='dpath: debug mode centroids file name')
             
         self.add_passthrough_option(
-            '--doutput', dest='debugtoutput', type='str',
+            '--doutput', dest='debugoutput', type='str',
             help='doutput: debug mode outputpath')
-        
-    
+     
+     
+    #construct an array with all the data points
     def mapper(self, _, line):
-        if False: yield # I'm a generator!
         
         point = [[float(feature) for feature in line.split()]]
         self.points = np.append(self.points, point, axis=0)
         
-    
+
+    #calculate the distance to nearest cluster, emits cluster id and its point
     def mapper_final(self):
-#        print 'Mapper final'
         labels = np.zeros(len(self.points), dtype=int)
         
-         #Calculating the distance to nearest cluster
+         #finds the distance to nearest cluster
         distmatrix = distance.cdist(self.points, self.centroids, metric='euclidean')
         labels[:] = distmatrix.argmin(axis=1)
+       
+        #Debug plotting
+#        np.savetxt(self.options.debugoutput + 'mrpoints.txt', self.points)
+        np.savetxt(self.options.debugoutput + 'mrlabels.txt', labels)
         
-        np.savetxt(self.options.debugtoutput + 'labels.txt', labels)
+        #emitting closest centroid id and its data point        
+        for i in xrange(len(self.points)):
+            yield int(labels[i]), list(self.points[i])
+            
+        
+    #calculates the mean and number of points per cluster inside a mapper node
+    def combiner(self, key, values):
+        points = list(values)
+        newmean = np.zeros(len(points[0]))
+
+        for point in points:
+            newmean += point
         
 #        pdb.set_trace()
-
-        #emitting closest centroid and data point        
-        for i in xrange(len(labels)):
-            label = labels[i]
-            point = self.points[i]
-            yield int(label), list(point)
-            
+        numPoints = len(points)
+        newmean /= numPoints
         
-    def combiner(self, key, values):
-        data = list(values)
-        newcentroid = [0]*2
-        for point in data:
-            for featureidx in xrange(len(point)):
-                newcentroid[featureidx] += point[featureidx]
-        
-        for i in xrange(len(newcentroid)):
-            newcentroid[i] = newcentroid[i] / len(data)
-            
-        #TODO return also number of points
-#        print "combiner key, newcentroid (%d, %s)" % (key, newcentroid)
-        yield int(key), newcentroid
+        yield int(key), [list(newmean), numPoints]
 
-    #calculating the new means for each cluster key
+    #calculating the new weighted means for each cluster key
     def reducer(self, key, values):
-        data = list(values)
-#        print 'Reducer key, values (%d, %s)' % (key, data)
         
-        newcentroid = [0]*2
-        for point in data:
-            for featureidx in xrange(len(point)):
-                newcentroid[featureidx] += point[featureidx]
-        
-        for i in xrange(len(newcentroid)):
-            newcentroid[i] = newcentroid[i] / len(data)
+        #split values to mean and number of points
+        meansAndnumPoints = list(values)
+        totalWeightMean = 0
+        totalNumPoints = 0
+        for item in meansAndnumPoints:
+            mean = np.array(item[0])
+            numPoints = item[1]
+            totalWeightMean += numPoints * mean
+            totalNumPoints += numPoints
             
-        yield key, newcentroid
+        weightedMean = totalWeightMean / totalNumPoints
+        yield int(key), list(weightedMean)
         
 
 
