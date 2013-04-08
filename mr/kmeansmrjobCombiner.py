@@ -62,44 +62,52 @@ class MRKMeansCombinerJob(MRJob):
         distmatrix = distance.cdist(self.points, self.centroids, metric='euclidean')
         labels[:] = distmatrix.argmin(axis=1)
        
-        #Debug plotting
+        #Plotting for debugging, when runner = inline
 #        np.savetxt(self.options.debugoutput + 'mrpoints.txt', self.points)
         np.savetxt(self.options.debugoutput + 'mrlabels.txt', labels)
         
         #emitting closest centroid id and its data point        
         for i in xrange(len(self.points)):
-            yield int(labels[i]), list(self.points[i])
+            yield int(labels[i]), self.points[i].tolist()
             
         
     #calculates the mean and number of points per cluster inside a mapper node
     def combiner(self, key, values):
-        points = list(values)
+        points = np.array(list(values))
         newmean = np.zeros(len(points[0]))
-
-        for point in points:
-            newmean += point
+        
+        pointsSum = np.sum(points, axis=0)
         
 #        pdb.set_trace()
         numPoints = len(points)
-        newmean /= numPoints
+        newmean = pointsSum / numPoints
         
-        yield int(key), [list(newmean), numPoints]
+        #condensed distance matrix
+        cdistmatrix = distance.pdist(points, metric='euclidean')
+        diameter = max(cdistmatrix)
+        
+        yield int(key), [newmean.tolist(), numPoints, diameter]
 
     #calculating the new weighted means for each cluster key
     def reducer(self, key, values):
         
         #split values to mean and number of points
         meansAndnumPoints = list(values)
-        totalWeightMean = 0
-        totalNumPoints = 0
+        totalWeightMeanSum, totalNumPoints = 0, 0
+
+        maxdiameter = 0
         for item in meansAndnumPoints:
             mean = np.array(item[0])
             numPoints = item[1]
-            totalWeightMean += numPoints * mean
+            diameter = item[2]
+            if(diameter > maxdiameter):
+                maxdiameter = diameter
+                
+            totalWeightMeanSum += numPoints * mean
             totalNumPoints += numPoints
             
-        weightedMean = totalWeightMean / totalNumPoints
-        yield int(key), list(weightedMean)
+        wmean = totalWeightMeanSum / totalNumPoints
+        yield int(key), [wmean.tolist(), maxdiameter]
         
 
 
