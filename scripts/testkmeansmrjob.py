@@ -49,12 +49,13 @@ if __name__ == '__main__':
 #                    mr_job.stdout.write(line)
 #                    import pdb; pdb.set_trace()
                     values = line.strip().split('\t')
-                    newCentroids[eval(values[0])] = eval(values[1])[0]
-                    diameter[eval(values[0])] = eval(values[1])[1]
+                    newCentroids[eval(values[0])] = eval(values[1])[0] #getting centroid vector
+                    diameter[eval(values[0])] = eval(values[1])[1] #getting the centroid diameter
                 mr_job.stdout.flush()
         
     
         print "new centroids: \n%s" % newCentroids
+        print "new diameters: %s" % diameter
         
         #check if the means have changed, if so then exit
         diff = 0

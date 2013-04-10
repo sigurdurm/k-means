@@ -84,7 +84,10 @@ class MRKMeansCombinerJob(MRJob):
         
         #condensed distance matrix
         cdistmatrix = distance.pdist(points, metric='euclidean')
-        diameter = max(cdistmatrix)
+        
+        diameter = 0
+        if np.size(cdistmatrix) > 0:
+            diameter = np.amax(cdistmatrix)
         
         yield int(key), [newmean.tolist(), numPoints, diameter]
 

@@ -20,7 +20,7 @@ class Utils():
         points = np.concatenate((pt1, pt2, pt3))
         
         #normalize using z-score
-        points = Utils.zscore(points)    
+        #points = Utils.zscore(points)    
         
         #initialize centroids.
         centroids = np.array(random.sample(points, k))
