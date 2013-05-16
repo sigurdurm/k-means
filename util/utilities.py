@@ -2,10 +2,17 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 import pylab
+import math
+from pprint import pprint
 
 
 class Utils():
     
+    
+    @staticmethod
+    def sigmoid(xy):
+        return 1/(1+np.exp(-xy))
+        
     @staticmethod
     def zscore(xy):
         return (xy-xy.mean())/xy.std()
@@ -32,6 +39,29 @@ class Utils():
             np.savetxt(centroidsfile, centroids)
         
         return points, centroids
+    
+    @staticmethod
+    def getInitialMeans(points, k):
+    
+        initialMeans = np.zeros((k, len(points[0])))
+        
+        identicalFound = True
+        while identicalFound:
+            initialMeans[:] = np.array(random.sample(points, k))
+            identicalFound = False
+            for i in xrange(k-1):
+                for j in xrange(k):
+                    j = j + i
+                    if i == j or j >= k:
+                        continue
+                    
+                    if (initialMeans[i,:] == initialMeans[j,:]).all():
+                        identicalFound = True
+                        print '*Indentical match found:'
+                        pprint(initialMeans[i,:])
+                        pprint(initialMeans[j,:])
+                    
+        return initialMeans
     
    
         

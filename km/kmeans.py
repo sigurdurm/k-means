@@ -3,6 +3,7 @@ import numpy as np
 import pylab
 from scipy.spatial import distance
 from util.utilities import Plot
+from pprint import pprint
 
 
 class KMeans():
@@ -24,9 +25,9 @@ class KMeans():
             for featureIdx in xrange(len(point)):
                 means[cluster,featureIdx] += point[featureIdx]
             
+        pprint('points in clusters %s' % pointsInClusters)       
         for clusterIdx in xrange(len(means)):
-            mean = means[clusterIdx]
-            mean /= float(pointsInClusters[clusterIdx])
+            means[clusterIdx] = means[clusterIdx] / float(pointsInClusters[clusterIdx])
         
         return means, pointsInClusters
         
@@ -49,17 +50,20 @@ class KMeans():
             Plot.subplotClusters(data, labels, means, iteration, title)
     
     
-    def run(self, data, numberOfClusters, threshold, maxiterations):
+    def run(self, data, means, numberOfClusters, threshold, maxiterations):
         # initialize means
-        means = np.array(random.sample(data, numberOfClusters))
-        print "Initial Means: \n%s" % means
+#        means = np.array(random.sample(data, numberOfClusters))
+#        print "Initial Means: \n%s" % means
         
+        pointsInClusters = np.zeros(numberOfClusters)
+        SSE = 0
         labels = np.zeros(len(data), dtype=int)
         iteration = 0
         
-        #plotting
-        self.doPlots(data, labels, means, iteration, title='iteration %i:' % (iteration))
         
+        #plotting
+#        self.doPlots(data, labels, means, iteration, title='iteration %i:' % (iteration))
+#        import pdb;pdb.set_trace()
         while iteration < maxiterations:
             #initialize labels for each iteration
             iteration += 1
@@ -75,6 +79,7 @@ class KMeans():
             #check if the means have changed  
             meansDiff = 0  
             for i in xrange(numberOfClusters):
+                pprint('%s %s' % (i, meansNew[i]))
                 meansDiff += distance.euclidean(meansNew[i], means[i])
                 
             print 'Means difference: %f' % meansDiff
@@ -84,7 +89,7 @@ class KMeans():
             print "SSE: %0.3f" % SSE
             
             #plotting
-            self.doPlots(data, labels, means, iteration, title='iteration %i meansdiff: %f' % (iteration, meansDiff))
+#            self.doPlots(data, labels, means, iteration, title='iteration %i meansdiff: %f' % (iteration, meansDiff))
                 
             means[:] = meansNew
             if meansDiff < threshold:
@@ -107,5 +112,5 @@ class KMeans():
             Plot.subplotClusters(data, labels, means, iteration, title='final means')
             pylab.show()
             
-        return means, labels
+        return means, labels, SSE
          
