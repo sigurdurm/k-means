@@ -1,9 +1,11 @@
 import random
+import sys
 import numpy as np
 import pylab
 from scipy.spatial import distance
-from util.utilities import Plot
+from util.utilities import Plot,Utils
 from pprint import pprint
+from time import time
 
 
 class KMeans():
@@ -32,14 +34,18 @@ class KMeans():
         return means, pointsInClusters
         
         
-    def calculateSSE(self, data, labels, numberOfClusters, means):
-        totalsse = 0
+#    def calculateSSE(self, data, labels, numberOfClusters, means):
+#        totalsse = 0
+#        
+#        #TODO write more efficently
+#        for i in xrange(len(data)):
+#            cluster = labels[i]
+#            point = data[i]
+#            d = np.sqrt(np.sum((point - means[cluster])**2))
+#            totalsse += d**2
+##            totalsse += distance.euclidean(point, means[cluster])**2
+            
         
-        #TODO write more efficently
-        for i in xrange(len(data)):
-            cluster = labels[i]
-            point = data[i]
-            totalsse += distance.euclidean(point, means[cluster])**2
 
         return totalsse
         
@@ -60,21 +66,67 @@ class KMeans():
         labels = np.zeros(len(data), dtype=int)
         iteration = 0
         
-        
+        total = 0
         #plotting
 #        self.doPlots(data, labels, means, iteration, title='iteration %i:' % (iteration))
 #        import pdb;pdb.set_trace()
         while iteration < maxiterations:
+            start = time()
+            
             #initialize labels for each iteration
             iteration += 1
             print "Iteration %d" % iteration 
             
-            #Calculating the distance to nearest cluster
-            distmatrix = distance.cdist(data, means, metric='euclidean')
-            labels[:] = distmatrix.argmin(axis=1)
+            #Distance matrics version
+            #Using distance matrix calculations
+#            #Calculating the distance to nearest cluster
+            meansNew, pointsInClusters = Utils.calcNewMeans(data, means)
+#
+#            #calculate a new mean for each cluster
+#            meansNew, pointsInClusters = self.calculateMeans(data, labels, numberOfClusters)
+
+            #find nearest centroid, where line is a data vector
+            
+            #Point diff Point version
+#            meansNew = np.zeros((numberOfClusters, len(data[0])))
+#            pointsInClusters = np.zeros(numberOfClusters)
+#            for i in xrange(len(data)):
+#                mindist = 0
+#                minCentroid = None
+#                point = data[i]                
+#                for idx in xrange(numberOfClusters):
+#                    d = np.sqrt(np.sum((point-means[idx])**2))
+#                    if(d < mindist or minCentroid == None):
+#                        mindist = d
+#                        minCentroid = idx
+#                labels[i] = minCentroid
+#                meansNew[minCentroid] += point
+#                pointsInClusters[minCentroid] += 1
+#            
+#            for i in xrange(len(meansNew)):
+#                meansNew[i] = meansNew[i] / float(pointsInClusters[i])
+
+            #Point diff Array version
+            #Using point and centroids calculations, like used in MR k-means
+            #Calculating the distance to nearest cluster and new mean
+#            pointsInClusters = np.zeros(numberOfClusters)
+#            meansNew = np.zeros((numberOfClusters, len(data[0])))
+#            for i in xrange(len(data)):
+#                point = data[i]
+#                d = np.sqrt(np.sum((point-means)**2,axis=1))
+#                minCentroidIdx = d.argmin()
+#                labels[i] = minCentroidIdx
+#                meansNew[minCentroidIdx] += point
+#                pointsInClusters[minCentroidIdx] += 1
+#            
+#            for i in xrange(len(meansNew)):
+#                meansNew[i] = meansNew[i] / float(pointsInClusters[i])
                 
-            #calculate a new mean for each cluster
-            meansNew, pointsInClusters = self.calculateMeans(data, labels, numberOfClusters)
+                
+            #measure calculation time
+            end = time()
+            print 'time: %f' % (end-start)
+            total += (end-start)
             
             #check if the means have changed  
             meansDiff = 0  
@@ -85,7 +137,7 @@ class KMeans():
             print 'Means difference: %f' % meansDiff
             
             #calculate the within cluster variation, sum of squared distances between all objects in cluster and its centroid
-            SSE = self.calculateSSE(data, labels, numberOfClusters, meansNew)
+            SSE = Utils.calcSSE(data, meansNew)            
             print "SSE: %0.3f" % SSE
             
             #plotting
@@ -94,6 +146,8 @@ class KMeans():
             means[:] = meansNew
             if meansDiff < threshold:
                 break
+            
+            
         
         #End of While loop
         #KMeans iterative process ends here
@@ -111,6 +165,9 @@ class KMeans():
         if self.showsubplots:
             Plot.subplotClusters(data, labels, means, iteration, title='final means')
             pylab.show()
+            
+        print 'total time: %f' %total
+       
             
         return means, labels, SSE
          

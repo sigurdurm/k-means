@@ -13,15 +13,30 @@ class MRKMeansJob(MRJob):
     def __init__(self, *args, **kwargs):
         super(MRKMeansJob, self).__init__(*args, **kwargs)
         
-        #Read in initial means
-#        if self.options.centroidsFilename == None:
-#            print 'No filename to initialized centroids given!'
-        if os.path.isfile(self.options.centroidsFilename):
-            self.centroids = np.loadtxt(self.options.centroidsFilename)
+        #DEBUG purposes  local file (runner=inline, because it cannot find the uploaded file)
+        #DEBUG inline
+#        self.centroids = np.loadtxt('/home/sigurdurm/spyderws/k-means/scripts/data/initialcentroids.txt')
+#        self.options.numberofclusters = len(self.centroids)
+#        self.points = np.zeros((0,len(self.centroids[0])))
+        
+        self.cfilename = self.options.centroidsFilename    
+        self.cinitfilename = self.options.initcentroidsFilename
+#        
+#        import pdb;pdb.set_trace()
+#        Read in initial means
+        if os.path.isfile(self.cinitfilename):
+            self.centroids = np.loadtxt(self.cinitfilename)
             self.options.numberofclusters = len(self.centroids)
-#            print 'Initialized centroids read in: \n%s' % self.centroids
-#        else:
-#            print 'Initialized centroids file not found!'
+            self.points = np.zeros((0,len(self.centroids[0])))
+        elif os.path.isfile(self.cfilename):
+            self.centroids = np.loadtxt(self.cfilename)
+            self.options.numberofclusters = len(self.centroids)
+            self.points = np.zeros((0,len(self.centroids[0])))
+            
+        #Read in initial means
+#        if os.path.isfile(self.options.centroidsFilename):
+#            self.centroids = np.loadtxt(self.options.centroidsFilename)
+#            self.options.numberofclusters = len(self.centroids)
             
         
     def configure_options(self):
@@ -34,6 +49,10 @@ class MRKMeansJob(MRJob):
         self.add_passthrough_option(
             '--cfile', dest='centroidsFilename', type='str',
             help='cfile: centroids file name')
+        
+        self.add_passthrough_option(
+            '--cinitfile', dest='initcentroidsFilename', type='str',
+            help='cinitfile: centroids file name')
         
     
     def mapper(self, key, line):       
@@ -57,7 +76,7 @@ class MRKMeansJob(MRJob):
     def reducer(self, key, values):
         data = list(values)
         
-        newcentroid = [0]*2
+        newcentroid = [0]*3
         for point in data:
             for featureidx in xrange(len(point)):
                 newcentroid[featureidx] += point[featureidx]

@@ -12,8 +12,8 @@ import scipy.stats as stats
 
 
 
-#data = 'zdata.txt'
-data = 'zdata_incl_purchase.txt'
+data = 'data/zdata.txt'
+#data = 'zdata_incl_purchase.txt'
 fn = os.path.join(os.path.dirname(__file__), data)
 print "opening file %s" % fn
 
@@ -57,15 +57,27 @@ points = np.loadtxt(fn)
 #plt.boxplot(points) #multiple plots
 #plt.show()
 
+#teset
+#plt.boxplot(points[:,0], )
+#count    94593.000000
+#mean         2.350364
+#std          4.823104
+#min          0.000000
+#25%          1.000000
+#50%          1.000000
+#75%          2.000000
+#max        220.000000
+
+
 
 # 3D Plot
-fig = plt.figure()
-ax3D = fig.add_subplot(111, projection='3d')
-ax3D.scatter(points[:, 0], points[:, 1], points[:, 2], s=30, marker='o') 
-ax3D.set_xlabel('Logins')
-ax3D.set_ylabel('Battles')
-ax3D.set_zlabel('PremiumSpent')
-plt.show()
+#fig = plt.figure()
+#ax3D = fig.add_subplot(111, projection='3d')
+#ax3D.scatter(points[:, 0], points[:, 1], points[:, 2], s=30, marker='o') 
+#ax3D.set_xlabel('Logins')
+#ax3D.set_ylabel('Battles')
+#ax3D.set_zlabel('PremiumSpent')
+#plt.show()
 
 #mpl.rcParams['legend.fontsize'] = 10
 #

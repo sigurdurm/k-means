@@ -4,10 +4,33 @@ import matplotlib.pyplot as plt
 import pylab
 import math
 from pprint import pprint
+from scipy.spatial import distance    
+import inspect
+import logging
+from datetime import datetime
 
 
 class Utils():
     
+    @staticmethod
+    def calcSSE(points, centroids):
+        distmatrix = distance.cdist(points, centroids, metric='euclidean')
+        return np.sum(distmatrix.min(axis=1)**2)
+        
+    @staticmethod
+    def calcNewMeans(points, oldmeans):
+        pointsInClusters = np.zeros(len(oldmeans))
+        meansNew = np.zeros((len(oldmeans), len(points[0])))            
+        
+        distmatrix = distance.cdist(points, oldmeans, metric='euclidean')
+        labels = distmatrix.argmin(axis=1)
+        for i in xrange(len(oldmeans)):
+            b = labels == i #bool array, finding points per label/centroid
+            assignedpoints = points[b]
+            pointsInClusters[i] = len(assignedpoints)
+            meansNew[i] = np.sum(assignedpoints, axis=0) / float(pointsInClusters[i])
+        
+        return meansNew, pointsInClusters
     
     @staticmethod
     def sigmoid(xy):
@@ -15,22 +38,23 @@ class Utils():
         
     @staticmethod
     def zscore(xy):
-        return (xy-xy.mean())/xy.std()
+#        return (xy-xy.mean())/xy.std()
+        return (xy-np.mean(xy, axis=0))/np.std(xy,axis=0)
         
     @staticmethod
     def generateTestDataAndCentroids(k, dimensions, datafile=None, centroidsfile=None):
         #generating random data    
-        pt1 = np.random.normal(1, 0.5, (100,dimensions))
-        pt2 = np.random.normal(5, 1, (50,dimensions))
-        pt3 = np.random.normal(10, 1, (100,dimensions))
+        pt1 = np.random.normal(1, 0.1, (2000000,dimensions))
+        pt2 = np.random.normal(2, 0.1, (2000000,dimensions))
+        pt3 = np.random.normal(4, 0.1, (2000000,dimensions))
          
         points = np.concatenate((pt1, pt2, pt3))
         
         #normalize using z-score
-        #points = Utils.zscore(points)    
+        points = Utils.zscore(points)    
         
         #initialize centroids.
-        centroids = np.array(random.sample(points, k))
+        centroids = Utils.getInitialMeans(points, k)
         
         #write to file
         if datafile:
@@ -57,10 +81,11 @@ class Utils():
                     
                     if (initialMeans[i,:] == initialMeans[j,:]).all():
                         identicalFound = True
-                        print '*Indentical match found:'
-                        pprint(initialMeans[i,:])
-                        pprint(initialMeans[j,:])
+#                        print '*Indentical match found:'
+#                        pprint(initialMeans[i,:])
+#                        pprint(initialMeans[j,:])
                     
+        print 'intialmeans found!'
         return initialMeans
     
    
@@ -104,3 +129,31 @@ class Plot():
         Plot.plotPoints(data, labels, title)
         Plot.plotMeans(means)
         pylab.show()
+
+
+class Logger():
+    @staticmethod
+    def function_logger(name, fileoutpostfix, file_level, file_numbers, console_level = None):
+        logger = logging.getLogger(name)
+        logger.setLevel(logging.DEBUG) #By default, logs all messages
+    
+        if console_level != None:
+            ch = logging.StreamHandler() #StreamHandler logs to console
+            ch.setLevel(console_level)
+            ch_format = logging.Formatter('%(asctime)s - %(message)s')
+            ch.setFormatter(ch_format)
+            logger.addHandler(ch)
+    
+        strnow = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        
+        fh = logging.FileHandler("{0}_{1}.log".format(strnow,fileoutpostfix))
+        fh.setLevel(file_level)
+        fh_format = logging.Formatter('%(asctime)s - %(lineno)d - %(levelname)-8s - %(message)s')
+        fh.setFormatter(fh_format)
+        logger.addHandler(fh)
+        
+        fhn = logging.FileHandler("{0}_{1}.dat".format(strnow,fileoutpostfix))
+        fhn.setLevel(logging.INFO)
+        logger.addHandler(fhn)
+    
+        return logger
