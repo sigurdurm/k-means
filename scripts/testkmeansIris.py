@@ -18,11 +18,12 @@ from scipy.spatial import distance
 from time import time
 import glob
 
-k,d,i = 3, 0.01, 10
+k,d,i = 3, 0.01, 20
 
 #load data set
 #data = 'data/iris-dat.dat'
-data = 'data/zdata-zscore.txt'
+#data = 'data/zdata-zscore.txt'
+data = 'data/zdata-zscore-wo-outliers.txt'
 #data = 'data/zdata_incl_purchase.txt'
 #data = 'data/gen_zscore_data.txt'
 fn = os.path.join(os.path.dirname(__file__), data)
@@ -31,13 +32,15 @@ points = np.loadtxt(fn)
 fninitcentroids = 'data/initialcentroids.txt' #zdata
 #fninitcentroids = 'data/gen_initial_centroids.txt'
 
+#points = Utils.sigmoid(points)
+
 #normalize using z-score or sigmoid
 #points = Utils.zscore(points)
 
 #PCA
-pca = decomposition.PCA(n_components=2)
-pca.fit(points)
-points = pca.transform(points)
+#pca = decomposition.PCA(n_components=2)
+#pca.fit(points)
+#points = pca.transform(points)
 
 
 #multiplefilepath = 'data/multiple/genshiftmeans/'
@@ -99,7 +102,7 @@ print "min means:\n %s" % minMeans
 #initialMeans[:] = Utils.getInitialMeans(points, k)
 print 'run scipy kmeans2'
 start = time()  
-res, idx = kmeans2(points,4)
+res, idx = kmeans2(points,minInitialMeans,i)
 #res, idx = kmeans2(points,k, i)
 end = time()
 total = (end-start)
@@ -123,14 +126,15 @@ print "SSE2: %s" % Utils.calcSSE(points, res)
 #    
 #print "SSE2: %s" % totalsse
 
-#fig = plt.figure()
-#ax3D = fig.add_subplot(111, projection='3d')
-#availcolors = [[0.4,1,0.4],[1,0.4,0.4],[0.5,0.5,1],[0.8,0.1,1],[0.8,1,0.1]]
-#colors = [availcolors[int(i)] for i in idx]
-#ax3D.scatter(points[:, 0], points[:, 1], points[:, 2], s=10, c=colors, marker='o') 
-###
-#ax3D.plot(res[:,0],res[:,1],res[:,2], marker='o', markersize=20, linewidth=0, c='y', mfc='None')
-#ax3D.plot(res[:,0],res[:,1],res[:,2], marker='*', markersize=20, linewidth=0,  c='y')
+fig = plt.figure()
+ax3D = fig.add_subplot(111, projection='3d')
+availcolors = [[0.4,1,0.4],[1,0.4,0.4],[0.5,0.5,1],[0.8,0.1,1],[0.8,1,0.1]]
+colors = [availcolors[int(i)] for i in idx]
+ax3D.scatter(points[:, 0], points[:, 1], points[:, 2], s=10, c=colors, marker='o') 
+##
+ax3D.plot(res[:,0],res[:,1],res[:,2], marker='o', markersize=20, linewidth=0, c='y', mfc='None')
+ax3D.plot(res[:,0],res[:,1],res[:,2], marker='*', markersize=20, linewidth=0,  c='y')
+pylab.show()
 
 #
 #fig = plt.figure()
@@ -147,9 +151,9 @@ print "SSE2: %s" % Utils.calcSSE(points, res)
 #print 'sc kmeans2 %s ' % metrics.silhouette_score(points, idx, metric='euclidean')
 #print 'sc kmeans user %s ' % metrics.silhouette_score(points, minLabels, metric='euclidean')
 
-Plot.plotPoints(points, idx, title='final kmeans2')
-Plot.plotMeans(res)
-pylab.show()
+#Plot.plotPoints(points, idx, title='final kmeans2')
+#Plot.plotMeans(res)
+#pylab.show()
 
 
 

@@ -10,8 +10,8 @@ import glob
 #Generate single file toy set data
 k = 3
 dimensions = 3
-fndata = os.path.join(os.path.dirname(__file__), 'data/gen_zscore_data_2.txt')
-fninitcentroids = os.path.join(os.path.dirname(__file__), 'data/gen_initial_centroids_2.txt')
+fndata = os.path.join(os.path.dirname(__file__), 'data/gen_zscore_data_shuffle_2.txt')
+fninitcentroids = os.path.join(os.path.dirname(__file__), 'data/gen_initial_centroids_shuffle_2.txt')
 
 #generate a data set
 points, cinit = Utils.generateTestDataAndCentroids(k, dimensions, fndata, fninitcentroids)

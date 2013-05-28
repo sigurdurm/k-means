@@ -43,12 +43,29 @@ class Utils():
         
     @staticmethod
     def generateTestDataAndCentroids(k, dimensions, datafile=None, centroidsfile=None):
-        #generating random data    
-        pt1 = np.random.normal(1, 0.1, (2000000,dimensions))
-        pt2 = np.random.normal(2, 0.1, (2000000,dimensions))
-        pt3 = np.random.normal(4, 0.1, (2000000,dimensions))
-         
-        points = np.concatenate((pt1, pt2, pt3))
+        #generating random data
+        plist = []
+        for i in xrange(400):
+            pt1 = np.random.normal(1, 0.1, (10000,dimensions))
+            pt2 = np.random.normal(2, 0.1, (10000,dimensions))
+            pt3 = np.random.normal(4, 0.1, (10000,dimensions))
+            plist.append(pt1)
+            plist.append(pt2)
+            plist.append(pt3)
+
+            
+#        pt1 = np.random.normal(1, 0.1, (2000000,dimensions))
+#        pt2 = np.random.normal(2, 0.1, (2000000,dimensions))
+#        pt3 = np.random.normal(4, 0.1, (2000000,dimensions))
+        
+        points = plist[0]
+        for i in xrange(len(plist)):
+            if i == 0:
+                continue
+            
+            points = np.concatenate((points, plist[i]))
+        
+#        points = np.concatenate((pt1, pt2, pt3))
         
         #normalize using z-score
         points = Utils.zscore(points)    

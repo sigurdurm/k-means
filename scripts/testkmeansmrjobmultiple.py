@@ -22,7 +22,7 @@ if __name__ == '__main__':
     running_aws = False
     
     k = 3
-    maxiterations = 1
+    maxiterations = 2
     delta = 0.01
     
     #Data Source    
@@ -33,7 +33,8 @@ if __name__ == '__main__':
 #    filenameinitcentroids = '2_initialcentroids.txt'
     
     path = os.path.dirname(__file__)
-    multiplefilepath = 'data/multiple/sorted/'
+    multiplefilepath = 'data/multiple/sorted/with outliers/'
+#    multiplefilepath = 'data/multiple/sorted/wo outliers/'
 #    multiplefilepath = 'data/multiple/genshiftmeans/'
     
     #Loading data points from multiple files, for SSE error in whole dataset
@@ -97,7 +98,8 @@ if __name__ == '__main__':
 #    minMeans = np.zeros((k, dimensions))
     
     #Sort input files in alphabetical order    
-    files = glob.glob(os.path.join(path, multiplefilepath + '*zscore.dat'))
+    files = glob.glob(os.path.join(path, multiplefilepath + '*zscore.dat')) #with outliers!
+#    files = glob.glob(os.path.join(path, multiplefilepath + '*zscore_wo_outliers.dat')) #without outliers!
 #    files = glob.glob(os.path.join(path, multiplefilepath + '*.dat'))
     files.sort()
     
@@ -107,7 +109,8 @@ if __name__ == '__main__':
     plotexperiments = []    
     
 #    points = np.zeros(()) #Use for data seen so far experiment
-    for x in xrange(1): # experiments
+    numexperiments = 10
+    for x in xrange(numexperiments): # experiments
             
         fileoutpostfix = '_mrjobmultiple_%s_%si' % (x, maxiterations)
         logger = Logger.function_logger(str(x), fileoutpostfix, logging.DEBUG, logging.INFO, logging.DEBUG)
@@ -267,7 +270,7 @@ for i in xrange(10):
     ##
     ax3D.plot(pr[2][:,0],pr[2][:,1],pr[2][:,2], marker='o', markersize=20, linewidth=0, c='y', mfc='None')
     ax3D.plot(pr[2][:,0],pr[2][:,1],pr[2][:,2], marker='*', markersize=20, linewidth=0, c='y')
-    plt.suptitle('Main title')
+#    plt.suptitle('Main title')
 
 #    Plot.plotPoints(pr[0], pr[1], title='Experiment %s' % i)
 #    Plot.plotMeans(pr[2])
@@ -275,7 +278,7 @@ for i in xrange(10):
     fileoutpostfix = '_mrjobmultiple_%s_%si' % (i, maxiterations)
     strnow = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     plt.savefig('%s_%s.png' % (strnow,fileoutpostfix))
-    plt.close()
+#    plt.close()
     
 
 

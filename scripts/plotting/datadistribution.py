@@ -11,13 +11,15 @@ import scipy.stats as stats
 
 
 
-
-data = 'data/zdata.txt'
+#data = 'data/events count per player_stripped.txt'
+#data = 'data/zdata.txt'
+data = 'data/zdata-wo-outliers.txt'
 #data = 'zdata_incl_purchase.txt'
 fn = os.path.join(os.path.dirname(__file__), data)
 print "opening file %s" % fn
 
 points = np.loadtxt(fn)
+
 #import pdb;pdb.set_trace()
 
 #normalize using z-score
@@ -34,6 +36,13 @@ points = np.loadtxt(fn)
 #xlabel = 'Logins'
 #plt.hist(points[:,0], bins=(0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,220), normed=False, rwidth=0.8) #max20
 #plt.hist(points[:,0], bins=(20,30,40,50,60,70,80,90,100,110,120,130,140,150,175,200,220), normed=False, rwidth=0.8) #min20
+#plt.hist(points[:], rwidth=0.7, bins =xrange(0,4, 1))
+#plt.hist(points[:], rwidth=0.7, bins =xrange(4,23, 1))
+#plt.hist(points[:], rwidth=0.7, bins =(22,23))
+#plt.hist(points[:], rwidth=0.7, bins =xrange(23,62, 1))
+
+#plt.hist(points[:], rwidth=0.7, bins =xrange(61,86, 1))
+#plt.hist(points[:], rwidth=0.7, bins =xrange(49,100))
 #Battle
 #title = "Battle Histogram"
 #xlabel = 'Battles'
@@ -51,11 +60,11 @@ points = np.loadtxt(fn)
 #plt.show()
 
 #BoxPlots
-#plt.boxplot(points[:,1]) #vertical
-#plt.boxplot(points[:,2],0,'rs',0) #horizontal
-#plt.boxplot(points[:,0])
+#plt.boxplot(points[:,0]) #vertical
+plt.boxplot(points[:,1],0,'rs',0) #horizontal
+#plt.boxplot(points[:])
 #plt.boxplot(points) #multiple plots
-#plt.show()
+plt.show()
 
 #teset
 #plt.boxplot(points[:,0], )

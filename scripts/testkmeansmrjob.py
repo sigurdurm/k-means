@@ -38,8 +38,12 @@ if __name__ == '__main__':
 #    filenameinitcentroids = 'initialcentroids.txt' #zdata
 #    filenamezscoredata = 'gen_zscore_data.txt' #generated test #3
 #    filenameinitcentroids = 'gen_initial_centroids.txt' #generated test #3 
-    filenamezscoredata = 'gen_zscore_data_2.txt' #generated test #3
-    filenameinitcentroids = 'gen_initial_centroids_2.txt' #generated test #3
+#    filenamezscoredata = 'gen_zscore_data_2.txt' #generated test #3
+#    filenameinitcentroids = 'gen_initial_centroids_2.txt' #generated test #3
+    filenamezscoredata = 'gen_zscore_data_shuffle.txt' #generated test #3
+    filenameinitcentroids = 'gen_initial_centroids_shuffle.txt' #generated test #3
+#    filenamezscoredata = 'gen_zscore_data_shuffle_2.txt' #generated test #3
+#    filenameinitcentroids = 'gen_initial_centroids_shuffle_2.txt' #generated test #3
 
     filenamecentroids = 'centroids.txt'
     
@@ -47,7 +51,7 @@ if __name__ == '__main__':
     path = os.path.dirname(__file__)
     filedata = 'data/%s' % filenamezscoredata
     print 'loading file... %s' % filedata
-    points = np.loadtxt(os.path.join(path, filedata))
+#    points = np.loadtxt(os.path.join(path, filedata))
 #    points = Utils.zscore(points) #normalize using z-score
 #    np.savetxt(os.path.join(path, 'data/%s' % filenamezscoredata), points) #Store normalized file locally
     
@@ -81,10 +85,11 @@ if __name__ == '__main__':
     
 #    time.sleep(10)
     
+    dimensions = 3
     #Iterative process
     minSSE = sys.maxint
-    minInitialMeans = np.zeros((k, len(points[0])))
-    minMeans = np.zeros((k, len(points[0])))
+    minInitialMeans = np.zeros((k, dimensions))
+    minMeans = np.zeros((k, dimensions))
     
     numexperiments = 1 #Number of experiments, with random initial centroids
     for count in xrange(numexperiments):
@@ -97,7 +102,7 @@ if __name__ == '__main__':
     
 #        oldCentroids = np.loadtxt(centroidsinputfile)
         oldCentroids = initialMeans #separate initial centroids
-        newCentroids = np.zeros((k, len(points[0])))
+        newCentroids = np.zeros((k, dimensions))
         
         print "initial centroids: \n%s" % oldCentroids
         
@@ -170,8 +175,8 @@ if __name__ == '__main__':
         
         print 'Total Running time: %f' %total
         
-        SSE = Utils.calcSSE(points, newCentroids)
-        print 'Sum of Squared Error: %s' % SSE
+#        SSE = Utils.calcSSE(points, newCentroids)
+#        print 'Sum of Squared Error: %s' % SSE
 
         
         if SSE < minSSE:

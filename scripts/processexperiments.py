@@ -22,7 +22,7 @@ import glob
 path = os.path.dirname(__file__)
 
 #Calculate means from experiments
-multiplefilepath = '/home/sigurdurm/Dropbox/Thesis/_Data/Experiments/incremental/genshiftmeans/SSEcurrentdataset/10_iteration/'
+multiplefilepath = '/home/sigurdurm/Dropbox/Thesis/_Data/Experiments/incremental/realdata/SSEcurrentdataset/2_iteration/'
 files = glob.glob(multiplefilepath + '*.dat')
 files.sort()
 
@@ -40,7 +40,7 @@ for f in files:
         print points
         
 pm = points.mean(axis=1)
-with open(multiplefilepath + 'SSEmeans.txt', 'w') as f:
+with open(multiplefilepath + 'SSE_avg_means.txt', 'w') as f:
     print pm
     print map(int, pm)    
     for item in map(int, pm):
