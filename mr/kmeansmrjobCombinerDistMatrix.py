@@ -1,35 +1,18 @@
 from mrjob.job import MRJob
 import numpy as np
 import os
-import sys
 from scipy.spatial import distance
-import math
 
-#Euclidian distance
-def dist(x, c):
-#    return np.sqrt(np.sum((x - c)**2)) #x: vector, c:vector
-    #return distance.euclidean(x, c) #Twice as slower than above.
-    #return np.linalg.norm(x-c) #little bit slower, avg. 0.5sec per iteration on zdata
-    return np.sqrt(np.sum((x-c)**2,axis=1))  #x: vector, c:array
-
-
-# Map, Combiner and Reduce
-# Final version with Vectorisation (NumPy)
+# Map and Reduce
+# Alternative version - Distane matrix
     
-class MRKMeansCombinerJob(MRJob):
+class MRKMeansCombinerDistMatrixJob(MRJob):
     def __init__(self, *args, **kwargs):
-        super(MRKMeansCombinerJob, self).__init__(*args, **kwargs)
-        
-        #DEBUG purposes  local file (runner=inline, because it cannot find the uploaded file)
-        #DEBUG inline
-#        self.centroids = np.loadtxt('/home/sigurdurm/spyderws/k-means/scripts/data/centroids.txt')
-#        self.options.numberofclusters = len(self.centroids)
-#        self.points = np.zeros((0,len(self.centroids[0])))
+        super(MRKMeansCombinerDistMatrixJob, self).__init__(*args, **kwargs)
         
         self.cfilename = self.options.centroidsFilename    
         self.cinitfilename = self.options.initcentroidsFilename
-        
-#        Read in initial means
+
         if os.path.isfile(self.cinitfilename):
             self.centroids = np.loadtxt(self.cinitfilename)
             self.options.numberofclusters = len(self.centroids)
@@ -41,7 +24,7 @@ class MRKMeansCombinerJob(MRJob):
             
         
     def configure_options(self):
-        super(MRKMeansCombinerJob, self).configure_options()
+        super(MRKMeansCombinerDistMatrixJob, self).configure_options()
         #Not used for now. len(self.centroids) sets the k in the constructor
         self.add_passthrough_option(
             '--k', dest='numberofclusters', type='int',
@@ -55,44 +38,56 @@ class MRKMeansCombinerJob(MRJob):
             '--cinitfile', dest='initcentroidsFilename', type='str',
             help='cinitfile: centroids file name')
      
+    #construct an array with all the data points
     def mapper(self, _, line):
-        point = np.array([float(feature) for feature in line.split()])
-        d = dist(point, self.centroids) #calculating distance per point
-        minCentroid = d.argmin() #gets the minimum distance centroid id
-
-        yield int(minCentroid), point.tolist() #point - centroids
+        #This first line makes this function a generator function rather than a
+        #normal function, which MRJob requires in its mapper functions. You need
+        #to do this when all the output comes from the mapper_final.
+        if False: yield
         
-
-    #calculates the intermediate sum and number of points per centroid
-    def combiner(self, key, values):
-
-        points = np.array(list(values))
-        pointsSum = np.sum(points, axis=0)
-        numPoints = len(points)
-        yield int(key), [pointsSum.tolist(), numPoints]
+        point = [[float(feature) for feature in line.split()]]
         
+        #Store points in memory
+        self.points = np.append(self.points, point, axis=0)
+
+        
+    #calculate the nearest centroid for all points
+    def mapper_final(self):
+        
+        #finds the distance to nearest cluster        
+        distmatrix = distance.cdist(self.points, self.centroids, metric='euclidean')
+        labels = distmatrix.argmin(axis=1)
+        
+        for i in xrange(self.options.numberofclusters):
+            b = labels == i #bool array, finding points per label/centroid
+            assignedpoints = self.points[b] #filter with boolean array
+            pointsSum = np.sum(assignedpoints, axis=0)
+            
+            yield (i, [pointsSum.tolist(), len(assignedpoints)])
+            
 
     #calculating the new weighted means for each cluster key
     def reducer(self, key, values):
         
-        #split values to mean and number of points
+        #split values to intermediate sum and number of points
         SumsAndnumPoints = list(values)
         totalSum, totalNumPoints = 0, 0
         
         for item in SumsAndnumPoints:
-
             pointSum = np.array(item[0])
             numPoints = item[1]
+
             totalSum += pointSum
             totalNumPoints += numPoints
             
         wmean = totalSum / totalNumPoints
-        
+
         yield (int(key), [wmean.tolist(), totalNumPoints])
 
+        
 
 if __name__ == '__main__':
-    MRKMeansCombinerJob.run()
+    MRKMeansCombinerDistMatrixJob.run()
     
     
         

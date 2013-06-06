@@ -2,60 +2,61 @@ import numpy as np
 import os.path
 from util import Utils,Plot
 import sys
-import boto
 from mr import *
 import subprocess
 from pprint import pprint
 import pylab
 from time import time
 
+
+#Run MR kmeans on single data file
+
+#MRJob Types 
+#MRKMeansCombinerJob 
+#MRKMeansCombinerNaiveJob 
+#MRKMeansCombinerDistMatrixJob 
+#MRKMeansJob #kmeansmrjob.py
     
 if __name__ == '__main__':
-    running_aws = True
+
+    #Run on AWS or not
+    running_aws = False
     
-    if(len(sys.argv) > 1):
-        running_aws = bool(sys.argv[1])
+#    if(len(sys.argv) > 1):
+#        running_aws = bool(sys.argv[1])
+#        print 'running AWS: %s' %running_aws
     
     k = 3
     maxiterations = 1
     delta = 0.01
-    
-    #test uploading to S3
-#    conn = boto.connect_s3()
-#    bucket = conn.get_bucket('mrkmeans')
-#    from boto.s3.key import Key
-#    k = Key(bucket)
-#    k.key = 'input/centroids/foobar'
-#    k.set_contents_from_string('This is a test of S3')
+    dimensions = 3
 
-    
     #Data Source    
 #    filenamedata = 'data/iris-dat.dat'
 #    filenamezscoredata = 'iris-dat-zscore.dat' #4
 #    filenamedata = 'data/zdata.txt'
 
-#    filenamezscoredata = 'zdata-zscore.txt' #3
-#    filenameinitcentroids = 'initialcentroids.txt' #zdata
+    filenamezscoredata = 'zdata-zscore.txt' #3
+    filenameinitcentroids = 'initialcentroids.txt' #zdata
 #    filenamezscoredata = 'gen_zscore_data.txt' #generated test #3
 #    filenameinitcentroids = 'gen_initial_centroids.txt' #generated test #3 
 #    filenamezscoredata = 'gen_zscore_data_2.txt' #generated test #3
 #    filenameinitcentroids = 'gen_initial_centroids_2.txt' #generated test #3
-    filenamezscoredata = 'gen_zscore_data_shuffle.txt' #generated test #3
-    filenameinitcentroids = 'gen_initial_centroids_shuffle.txt' #generated test #3
-#    filenamezscoredata = 'gen_zscore_data_shuffle_2.txt' #generated test #3
-#    filenameinitcentroids = 'gen_initial_centroids_shuffle_2.txt' #generated test #3
+#    filenamezscoredata = 'gen_zscore_data_shuffle.txt' #generated test #3
+#    filenameinitcentroids = 'gen_initial_centroids_shuffle.txt' #generated test #3
+#    filenamezscoredata = 'gen_zscore_data_shuffle_220MB.txt' #generated test #3
+#    filenameinitcentroids = 'gen_initial_centroids_shuffle_220MB.txt' #generated test #3
 
-    filenamecentroids = 'centroids.txt'
+    filenameintermediatecentroids = 'centroids.txt'
     
-    #Loading data points and normalize
+    #Loading data points
     path = os.path.dirname(__file__)
     filedata = 'data/%s' % filenamezscoredata
     print 'loading file... %s' % filedata
-#    points = np.loadtxt(os.path.join(path, filedata))
+    points = np.loadtxt(os.path.join(path, filedata))
 #    points = Utils.zscore(points) #normalize using z-score
-#    np.savetxt(os.path.join(path, 'data/%s' % filenamezscoredata), points) #Store normalized file locally
     
-    #MapReduceJob params
+    #MapReduceJob paramsd
     if running_aws == False:
 #        runner = 'inline' #debug
         runner = 'local' #local hadoop cluster simulation
@@ -65,56 +66,31 @@ if __name__ == '__main__':
         runner = 'emr' #Amazon Elastic MapReduce
         mrinputfile = 's3://mrkmeans/input/%s' % filenamezscoredata
     
-    centroidsinputfile = os.path.join(path, 'data/' + filenamecentroids)
+    intermediatecentroidsinputfile = os.path.join(path, 'data/' + filenameintermediatecentroids)
     initialcentroidsinputfile = os.path.join(path, 'data/' + filenameinitcentroids)
-#    initialcentroidsinputfile = os.path.join(path, 'data/multiple/' + filenameinitcentroids)
-
-
-    #Creating a job Flow
-#    import pdb;pdb.set_trace()    
-#    proc = subprocess.Popen(['python', '/usr/lib/python2.7/dist-packages/mrjob/tools/emr/create_job_flow.py', '--hadoop-version=1.0.3'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-#    procoutput = proc.communicate()[0]
-#    print procoutput
-#    listout = procoutput.split('\n')
-#    jobflowid = listout[len(listout)-2]
-#    print 'Persistent EMR JobFlowId created %s' % jobflowid
-#    jobflowid =  'j-2WQYGNJHELRLK'
     
-#    mroutputdir = 's3://%s-mrkmeans/output/' % jobflowid#EMR
-#    mroutputdir = 's3://mrkmeans/output/'#EMR
     
-#    time.sleep(10)
-    
-    dimensions = 3
     #Iterative process
     minSSE = sys.maxint
     minInitialMeans = np.zeros((k, dimensions))
     minMeans = np.zeros((k, dimensions))
+    oldCentroids = np.zeros((k, dimensions))
     
     numexperiments = 1 #Number of experiments, with random initial centroids
     for count in xrange(numexperiments):
         #initializing
         initialMeans = np.loadtxt(initialcentroidsinputfile) #separate initial file
 
-        #init random centroids 
-#        initialMeans = Utils.getInitialMeans(points, k)     
-#        np.savetxt(centroidsinputfile, initialMeans)
-    
-#        oldCentroids = np.loadtxt(centroidsinputfile)
-        oldCentroids = initialMeans #separate initial centroids
+        oldCentroids[:] = initialMeans #separate initial centroids
         newCentroids = np.zeros((k, dimensions))
         
         print "initial centroids: \n%s" % oldCentroids
         
-    #    diameter= [0]*k
         pointsInCentroid = [0]*k
         total = 0
         for i in xrange(maxiterations):
-            #Create the MR Job
-            #    mr_job = MRKMeansJob(args=[inputfile1, '-r', runner, '--file', centroidsinputfile, '--cfile', centroidsfilenamejob, '--k', str(k)])
-
             #MRJob params            
-            params = [mrinputfile, '-r', runner, '--file', centroidsinputfile, '--cfile', filenamecentroids, '--k', str(k)]
+            params = [mrinputfile, '-r', runner, '--file', intermediatecentroidsinputfile, '--cfile', filenameintermediatecentroids, '--k', str(k)]
 
             # Only initialize centroids in the first iteration
             if i == 0:            
@@ -128,7 +104,7 @@ if __name__ == '__main__':
             else:
                 params += ['--pool-emr-job-flows']#, '--pool-name', 'kmeansmrjob']
 
-            mr_job = MRKMeansCombinerJob(args=params)
+            mr_job = MRKMeansJob(args=params)
             
             start = time()
             print 'iteration %d' % i
@@ -139,16 +115,12 @@ if __name__ == '__main__':
                 jobrunner.run()
         
                 #parse the new means from std.output from reducers
-                #TODO, possible switch out parsing the output from std.out to parsing output files from reducers.    
                 if not mr_job.options.no_output:
                     for line in jobrunner.stream_output():
-    #                    mr_job.stdout.write(line)
-    #                    import pdb; pdb.set_trace()
                         values = line.strip().split('\t')
 #                        newCentroids[eval(values[0])] = eval(values[1]) #getting centroid vector, from (key,value)
                         newCentroids[eval(values[0])] = eval(values[1])[0] #getting centroid vector from (key, valuelist)
                         pointsInCentroid[eval(values[0])] = eval(values[1])[1] #getting number of elements per centroid
-    #                    diameter[eval(values[0])] = eval(values[1])[1] #getting the centroid diameter
                     mr_job.stdout.flush()
                     
             end = time()
@@ -158,8 +130,6 @@ if __name__ == '__main__':
             # no more initial centroids to mrjob. Intermediate centroids are used from now on.
             print "New centroids from MR job: \n%s" % newCentroids
             print "Points per centroid %s" % pointsInCentroid
-    #        print "new diameters: %s" % diameter
-    
             
             #check if the means have changed, if so then exit
             diff = np.sum(np.sqrt(np.sum((newCentroids - oldCentroids)**2, axis=1)))
@@ -169,16 +139,14 @@ if __name__ == '__main__':
                 break
             else:
                 oldCentroids[:] = newCentroids
-                np.savetxt(centroidsinputfile, newCentroids) #save intermediate centroids
+                np.savetxt(intermediatecentroidsinputfile, newCentroids) #save intermediate centroids
                 
 
-        
         print 'Total Running time: %f' %total
         
-#        SSE = Utils.calcSSE(points, newCentroids)
-#        print 'Sum of Squared Error: %s' % SSE
+        SSE = Utils.calcSSE(points, newCentroids)
+        print 'Sum of Squared Error: %s' % SSE
 
-        
         if SSE < minSSE:
             print '**New min SSE %s' % SSE
             minSSE = SSE

@@ -6,6 +6,7 @@ from scipy.spatial import distance
 from util.utilities import Plot,Utils
 from pprint import pprint
 from time import time
+import math
 
 
 class KMeans():
@@ -47,7 +48,7 @@ class KMeans():
             
         
 
-        return totalsse
+#        return totalsse
         
     def doPlots(self, data, labels, means, iteration, title):
         if not self.showsubplots:
@@ -81,19 +82,45 @@ class KMeans():
             #Using distance matrix calculations
 #            #Calculating the distance to nearest cluster
             meansNew, pointsInClusters = Utils.calcNewMeans(data, means)
-#
-#            #calculate a new mean for each cluster
+            
+            #calculate a new mean for each cluster
 #            meansNew, pointsInClusters = self.calculateMeans(data, labels, numberOfClusters)
+            
 
             #find nearest centroid, where line is a data vector
             
-            #Point diff Point version
+            #feature diff feature version!
 #            meansNew = np.zeros((numberOfClusters, len(data[0])))
 #            pointsInClusters = np.zeros(numberOfClusters)
 #            for i in xrange(len(data)):
-#                mindist = 0
+#                mindist = sys.maxint
 #                minCentroid = None
-#                point = data[i]                
+#                point = data[i]  
+#                for idx in xrange(numberOfClusters):
+#                    d = 0
+#                    for i in xrange(len(means[idx])):
+#                        c = means[idx]
+#                        d += abs(point[i] - c[i])**2
+#                    
+#                    d = math.sqrt(d)
+#                    if(d < mindist or minCentroid == None):
+#                        mindist = d
+#                        minCentroid = idx
+#                labels[i] = minCentroid
+#                meansNew[minCentroid] += point
+#                pointsInClusters[minCentroid] += 1
+#            
+#            for i in xrange(len(meansNew)):
+#                meansNew[i] = meansNew[i] / float(pointsInClusters[i])
+                
+                
+                #Point diff Point (vectorisation)!
+#            meansNew = np.zeros((numberOfClusters, len(data[0])))
+#            pointsInClusters = np.zeros(numberOfClusters)
+#            for i in xrange(len(data)):
+#                mindist = sys.maxint
+#                minCentroid = None
+#                point = data[i]  
 #                for idx in xrange(numberOfClusters):
 #                    d = np.sqrt(np.sum((point-means[idx])**2))
 #                    if(d < mindist or minCentroid == None):
@@ -106,9 +133,9 @@ class KMeans():
 #            for i in xrange(len(meansNew)):
 #                meansNew[i] = meansNew[i] / float(pointsInClusters[i])
 
-            #Point diff Array version
-            #Using point and centroids calculations, like used in MR k-means
-            #Calculating the distance to nearest cluster and new mean
+            #Point diff Array version (vectorisation)
+#            Using point and centroids calculations, like used in MR k-means
+#            Calculating the distance to nearest cluster and new mean
 #            pointsInClusters = np.zeros(numberOfClusters)
 #            meansNew = np.zeros((numberOfClusters, len(data[0])))
 #            for i in xrange(len(data)):

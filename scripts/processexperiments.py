@@ -22,7 +22,7 @@ import glob
 path = os.path.dirname(__file__)
 
 #Calculate means from experiments
-multiplefilepath = '/home/sigurdurm/Dropbox/Thesis/_Data/Experiments/incremental/realdata/SSEcurrentdataset/2_iteration/'
+multiplefilepath = '/home/sigurdurm/Dropbox/Thesis/_Data/Experiments/incremental/genshiftmeans/SSEcurrentdataset/5_iteration/'
 files = glob.glob(multiplefilepath + '*.dat')
 files.sort()
 

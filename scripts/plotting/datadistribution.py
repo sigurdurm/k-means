@@ -12,8 +12,8 @@ import scipy.stats as stats
 
 
 #data = 'data/events count per player_stripped.txt'
-#data = 'data/zdata.txt'
-data = 'data/zdata-wo-outliers.txt'
+data = 'data/zdata.txt'
+#data = 'data/zdata-wo-outliers.txt'
 #data = 'zdata_incl_purchase.txt'
 fn = os.path.join(os.path.dirname(__file__), data)
 print "opening file %s" % fn
@@ -61,10 +61,10 @@ points = np.loadtxt(fn)
 
 #BoxPlots
 #plt.boxplot(points[:,0]) #vertical
-plt.boxplot(points[:,1],0,'rs',0) #horizontal
+#plt.boxplot(points[:,1],0,'rs',0) #horizontal
 #plt.boxplot(points[:])
 #plt.boxplot(points) #multiple plots
-plt.show()
+#plt.show()
 
 #teset
 #plt.boxplot(points[:,0], )
@@ -80,13 +80,17 @@ plt.show()
 
 
 # 3D Plot
-#fig = plt.figure()
-#ax3D = fig.add_subplot(111, projection='3d')
-#ax3D.scatter(points[:, 0], points[:, 1], points[:, 2], s=30, marker='o') 
-#ax3D.set_xlabel('Logins')
-#ax3D.set_ylabel('Battles')
-#ax3D.set_zlabel('PremiumSpent')
-#plt.show()
+fig = plt.figure()
+
+ax3D = fig.add_subplot(111, projection='3d')
+ax3D.scatter(points[:, 0], points[:, 1], points[:, 2], s=30, marker='o') 
+ax3D.set_title('Game Dataset')
+ax3D.set_xlabel('Logins')
+ax3D.set_ylabel('Battles')
+ax3D.set_zlabel('PremiumSpent')
+plt.show()
+
+
 
 #mpl.rcParams['legend.fontsize'] = 10
 #

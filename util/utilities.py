@@ -30,6 +30,7 @@ class Utils():
             pointsInClusters[i] = len(assignedpoints)
             meansNew[i] = np.sum(assignedpoints, axis=0) / float(pointsInClusters[i])
         
+    
         return meansNew, pointsInClusters
     
     @staticmethod
@@ -44,28 +45,33 @@ class Utils():
     @staticmethod
     def generateTestDataAndCentroids(k, dimensions, datafile=None, centroidsfile=None):
         #generating random data
-        plist = []
-        for i in xrange(400):
-            pt1 = np.random.normal(1, 0.1, (10000,dimensions))
-            pt2 = np.random.normal(2, 0.1, (10000,dimensions))
-            pt3 = np.random.normal(4, 0.1, (10000,dimensions))
-            plist.append(pt1)
-            plist.append(pt2)
-            plist.append(pt3)
+#        plist = []
+#        for i in xrange(400):
+#            pt1 = np.random.normal(1, 0.1, (10000,dimensions))
+#            pt2 = np.random.normal(2, 0.1, (10000,dimensions))
+#            pt3 = np.random.normal(4, 0.1, (10000,dimensions))
+#            plist.append(pt1)
+#            plist.append(pt2)
+#            plist.append(pt3)
 
             
-#        pt1 = np.random.normal(1, 0.1, (2000000,dimensions))
-#        pt2 = np.random.normal(2, 0.1, (2000000,dimensions))
-#        pt3 = np.random.normal(4, 0.1, (2000000,dimensions))
+        pt1 = np.random.normal(1, 0.1, (1000000,dimensions))
+        pt2 = np.random.normal(2, 0.2, (1000000,dimensions))
+        pt3 = np.random.normal(4, 0.4, (1000000,dimensions))
         
-        points = plist[0]
-        for i in xrange(len(plist)):
-            if i == 0:
-                continue
-            
-            points = np.concatenate((points, plist[i]))
+#        points = plist[0]
+#        for i in xrange(len(plist)):
+#            if i == 0:
+#                continue
+#            
+#            points = np.concatenate((points, plist[i]))
         
-#        points = np.concatenate((pt1, pt2, pt3))
+        points = np.concatenate((pt1, pt2, pt3))
+        print 'before shuffle '
+        print points
+        np.random.shuffle(points)
+        print 'after shuffle'
+        print points
         
         #normalize using z-score
         points = Utils.zscore(points)    

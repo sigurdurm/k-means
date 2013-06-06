@@ -7,7 +7,10 @@ from scipy.spatial import distance
 def dist(x, c):
     return distance.euclidean(x, c)
         
-    
+        
+# Map and Reduce
+# First version
+
 class MRKMeansJob(MRJob):
     
     def __init__(self, *args, **kwargs):
@@ -22,7 +25,6 @@ class MRKMeansJob(MRJob):
         self.cfilename = self.options.centroidsFilename    
         self.cinitfilename = self.options.initcentroidsFilename
 #        
-#        import pdb;pdb.set_trace()
 #        Read in initial means
         if os.path.isfile(self.cinitfilename):
             self.centroids = np.loadtxt(self.cinitfilename)
@@ -32,11 +34,6 @@ class MRKMeansJob(MRJob):
             self.centroids = np.loadtxt(self.cfilename)
             self.options.numberofclusters = len(self.centroids)
             self.points = np.zeros((0,len(self.centroids[0])))
-            
-        #Read in initial means
-#        if os.path.isfile(self.options.centroidsFilename):
-#            self.centroids = np.loadtxt(self.options.centroidsFilename)
-#            self.options.numberofclusters = len(self.centroids)
             
         
     def configure_options(self):
@@ -59,7 +56,7 @@ class MRKMeansJob(MRJob):
         #split line to a vectorl
         point = [float(feature) for feature in line.split()]
         
-        #find nearest centroid, where line is a data vector
+        #find nearest centroid
         mindist = 0
         minCentroid = None
         for idx in xrange(self.options.numberofclusters):
