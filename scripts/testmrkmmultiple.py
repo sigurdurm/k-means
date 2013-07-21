@@ -31,7 +31,7 @@ if __name__ == '__main__':
     running_aws = False
     
     k = 3
-    maxiterations = 1
+    maxiterations = 5
     delta = 0.01
     
     
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     
     
     #Sort input files in alphabetical order    
-#    files = glob.glob(os.path.join(path, multiplefilepath + '*zscore.dat')) #with outliers!
+#    files = glob.glob(os.path.join(path, multiplefilepath + '*zscore.dat')) #with outliers or genshiftmeans!
     files = glob.glob(os.path.join(path, multiplefilepath + '*zscore_wo_outliers.dat')) #without outliers!
 #    files = glob.glob(os.path.join(path, multiplefilepath + '*.dat'))
     files.sort()
@@ -75,8 +75,11 @@ if __name__ == '__main__':
     
     plotexperiments = []    
 #    points = np.zeros(()) #Use for data seen so far experiment
-    numexperiments = 1
+    numexperiments = 10
     for x in xrange(numexperiments): # experiments
+    
+        if x != 3:
+            continue
             
         fileoutpostfix = '_mrjobmultiple_%s_%si' % (x, maxiterations)
         logger = Logger.function_logger(str(x), fileoutpostfix, logging.DEBUG, logging.INFO, logging.DEBUG)
@@ -164,9 +167,10 @@ if __name__ == '__main__':
             logger.debug( 'Sum of Squared Error: %s' % SSE)
             
         
-        #finds the distance to nearest cluster        
-        distmatrix = distance.cdist(points, newCentroids, metric='euclidean')
-        labels = distmatrix.argmin(axis=1)
+            #per data batch
+            #finds the distance to nearest cluster        
+            distmatrix = distance.cdist(points, newCentroids, metric='euclidean')
+            labels = distmatrix.argmin(axis=1)
 
         #Local
         #points = np.loadtxt(inputfile1)
@@ -175,8 +179,9 @@ if __name__ == '__main__':
 #        strnow = datetime.now().strftime("%Y-%m-%d_%H%M%S")
 #        plt.savefig('%s_%s.png' % (strnow,fileoutpostfix))
 #        plt.close()
-
-        plotexperiments.append([points, labels, newCentroids])        
+            
+            #per data batch
+            plotexperiments.append([points, labels, newCentroids])
         
 #    
 #        fig = plt.figure()
@@ -195,24 +200,30 @@ if __name__ == '__main__':
     
 
 #Plot final clusters for each experiment
-#for i in xrange(10):
-#   
-#    pr = plotexperiments[i]
-#    fig = plt.figure()
-#    ax3D = fig.add_subplot(111, projection='3d')
-#    availcolors = [[0.4,1,0.4],[1,0.4,0.4],[0.5,0.5,1],[0.8,0.1,1],[0.8,1,0.1]]
-#    colors = [availcolors[int(i)] for i in pr[1]]
-#    ax3D.scatter(pr[0][:, 0], pr[0][:, 1], pr[0][:, 2], s=10, c=colors, marker='o') 
-#    ##
-#    ax3D.plot(pr[2][:,0],pr[2][:,1],pr[2][:,2], marker='o', markersize=20, linewidth=0, c='y', mfc='None')
-#    ax3D.plot(pr[2][:,0],pr[2][:,1],pr[2][:,2], marker='*', markersize=20, linewidth=0, c='y')
-##    Plot.plotPoints(pr[0], pr[1], title='Experiment %s' % i)
-##    Plot.plotMeans(pr[2])
-#
-#    fileoutpostfix = '_mrjobmultiple_%s_%si' % (i, maxiterations)
-#    strnow = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-#    plt.savefig('%s_%s.png' % (strnow,fileoutpostfix))
-##    plt.close()
+for j in xrange(len(plotexperiments)):
+    
+   
+    pr = plotexperiments[j]
+    #3d
+    fig = plt.figure()
+    ax3D = fig.add_subplot(111, projection='3d')
+    availcolors = [[0.4,1,0.4],[1,0.4,0.4],[0.5,0.5,1],[0.8,0.1,1],[0.8,1,0.1]]
+    colors = [availcolors[int(i)] for i in pr[1]]
+    ax3D.scatter(pr[0][:, 0], pr[0][:, 1], pr[0][:, 2], s=10, c=colors, marker='o') 
+    ##
+    ax3D.plot(pr[2][:,0],pr[2][:,1],pr[2][:,2], marker='o', markersize=20, linewidth=0, c='y', mfc='None')
+    ax3D.plot(pr[2][:,0],pr[2][:,1],pr[2][:,2], marker='*', markersize=20, linewidth=0, c='y')
+    plt.title('Experiment %s' % j)
+    
+    #2d
+#    Plot.plotPoints(pr[0], pr[1], title='Experiment %s' % i)
+#    Plot.plotMeans(pr[2])
+
+    fileoutpostfix = '_mrjobmultiple_%s_%si' % (j, maxiterations)
+    strnow = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    plt.savefig('%s_%s.png' % (strnow,fileoutpostfix))
+#    plt.close()
+    plt.cla()
     
 
 

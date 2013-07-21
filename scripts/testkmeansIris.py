@@ -18,20 +18,20 @@ from scipy.spatial import distance
 from time import time
 import glob
 
-k,d,i = 3, 0.01, 1
+k,d,i = 3, 0.01, 20
 
 #load data set
 #data = 'data/iris-dat.dat'
 #data = 'data/zdata-zscore.txt'
-#data = 'data/zdata-zscore-wo-outliers.txt'
+data = 'data/zdata-zscore-wo-outliers.txt'
 #data = 'data/zdata_incl_purchase.txt'
-data = 'data/gen_zscore_data_shuffle_880MB.txt'
+#data = 'data/gen_zscore_data_shuffle_880MB.txt'
 #data = 'data/multiple/genshiftmeans/0_gendata_shiftingmeans_zscore.dat'
 fn = os.path.join(os.path.dirname(__file__), data)
 print "opening file %s" % fn
 points = np.loadtxt(fn)
 #fninitcentroids = 'data/initialcentroids.txt' #zdata
-fninitcentroids = 'data/gen_initial_centroids_shuffle_880MB.txt'
+#fninitcentroids = 'data/gen_initial_centroids_shuffle_880MB.txt'
 
 #points = Utils.sigmoid(points)
 
@@ -58,6 +58,8 @@ fninitcentroids = 'data/gen_initial_centroids_shuffle_880MB.txt'
 
 
 
+
+
 # run kmeans
 km = KMeans(showsubplots=False)
 
@@ -72,7 +74,7 @@ minLabels = np.zeros(len(points), dtype=int)
 
     
 # initialize means
-numOfExperiments = 0 #number of random initial means experiments
+numOfExperiments = 5 #number of random initial means experiments
 for count in xrange(numOfExperiments):
     if numOfExperiments == 1:
         initialMeans[:] = np.loadtxt(os.path.join(os.path.dirname(__file__), fninitcentroids))
@@ -106,40 +108,40 @@ print "min means:\n %s" % minMeans
     
 #files = glob.glob(os.path.join(os.path.dirname(__file__), 'data/multiple/genshiftmeans/*s.dat')) #Multiple files
 #files = glob.glob(os.path.join(os.path.dirname(__file__), 'data/multiple/sorted/wo outliers/original/*outliers.dat')) #Multiple files
-files = glob.glob(os.path.join(os.path.dirname(__file__), 'data/multiple/sorted/wo outliers/*outliers.dat')) #Multiple files
-#files = glob.glob('/home/sigurdurm/Downloads/multiple/sortedtimestamp/*.dat') #Multiple files
-files.sort() #Multiple files
-rows = 5
-columns = 2
-f, test = plt.subplots(rows, columns, sharex='col', sharey='row')
-c = 0
-r = 0
-for x in xrange(len(files)):
-    f = files[x] #Multiple files
-    points = np.loadtxt(f) #Multiple files
-    print points
-#    points = Utils.zscore(points)
-    print points
-    #PCA
-#    pca = decomposition.PCA(n_components=2)
-#    pca.fit(points)
-#    points = pca.transform(points)
-    #
-    #np.savetxt(os.path.join(os.path.dirname(__file__), 'data/tmp/minLabels.txt'), minLabels)
-    
-    #initialMeans[:] = np.loadtxt(os.path.join(os.path.dirname(__file__), fninitcentroids))
-    #initialMeans[:] = Utils.getInitialMeans(points, k)
-    print 'run scipy kmeans2'
-    start = time()  
-    res, idx = kmeans2(points,3)
-    #res, idx = kmeans2(points,k, i)
-    end = time()
-    total = (end-start)
-    print 'total scipy kmeans2 time: %f' %total
-    print 'kmeans2 final means:\n %s' % res
-            
-    #Used as it is the same as used in the MR k-means
-    print "SSE2: %s" % Utils.calcSSE(points, res)
+#files = glob.glob(os.path.join(os.path.dirname(__file__), 'data/multiple/sorted/wo outliers/*outliers.dat')) #Multiple files
+##files = glob.glob('/home/sigurdurm/Downloads/multiple/sortedtimestamp/*.dat') #Multiple files
+#files.sort() #Multiple files
+#rows = 5
+#columns = 2
+#f, test = plt.subplots(rows, columns, sharex='col', sharey='row')
+#c = 0
+#r = 0
+#for x in xrange(len(files)):
+#    f = files[x] #Multiple files
+#    points = np.loadtxt(f) #Multiple files
+#    print points
+##    points = Utils.zscore(points)
+#    print points
+#    #PCA
+##    pca = decomposition.PCA(n_components=2)
+##    pca.fit(points)
+##    points = pca.transform(points)
+#    #
+#    #np.savetxt(os.path.join(os.path.dirname(__file__), 'data/tmp/minLabels.txt'), minLabels)
+#    
+#    #initialMeans[:] = np.loadtxt(os.path.join(os.path.dirname(__file__), fninitcentroids))
+#    #initialMeans[:] = Utils.getInitialMeans(points, k)
+#    print 'run scipy kmeans2'
+#    start = time()  
+#    res, idx = kmeans2(points,3)
+#    #res, idx = kmeans2(points,k, i)
+#    end = time()
+#    total = (end-start)
+#    print 'total scipy kmeans2 time: %f' %total
+#    print 'kmeans2 final means:\n %s' % res
+#            
+#    #Used as it is the same as used in the MR k-means
+#    print "SSE2: %s" % Utils.calcSSE(points, res)
 #    
 ##    availcolors = [[0.4,1,0.4],[1,0.4,0.4],[0.5,0.5,1],[0.8,0.1,1],[0.8,1,0.1]]
 ##    colors = [availcolors[int(i)] for i in idx]
