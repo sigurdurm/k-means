@@ -1,7 +1,7 @@
 k-means
 =======
 
-Source code for my M.Sc. thesis project : "Clustering Player Behavior in Data Streams using MapReduce"
+Source code for my M.Sc. thesis project at IT-University in Copenhagen, DK. 2013: "Clustering Player Behavior in Data Streams using MapReduce"
 
 Here you can find:
  1. Normal Kmeans using scipy and numpy arrays
