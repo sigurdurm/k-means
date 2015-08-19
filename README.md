@@ -1,8 +1,8 @@
 k-means
 =======
 
-Under construction.
+Source code for my M.Sc. thesis project : "Clustering Player Behavior in Data Streams using MapReduce"
 
-Clustering with kmeans:
+Here you can find:
  1. Normal Kmeans using scipy and numpy arrays
- 2. mrjob Map-Reduce implementation (using a combiner and a distance matrix)
+ 2. mrjob Map-Reduce implementation (using a combiner function and a numpy array vectorisation)
